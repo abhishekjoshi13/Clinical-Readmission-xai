@@ -48,7 +48,7 @@ async def predict(data: PatientData):
         
     try:
         # convert payload to dataframe
-        df = pd.DataFrame([data.model_dump()])
+        df = pd.DataFrame([data.model_dump(by_alias=True)])
         
         # get probability
         probs = model.predict_proba(df)
