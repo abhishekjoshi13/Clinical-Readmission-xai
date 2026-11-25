@@ -253,7 +253,7 @@ def predict_risk(data: PatientData):
             "predicted_label": (
                 "readmission_within_30_days"
                 if prediction == 1
-                else "no_readmission_within_30_days"
+                else "not_readmitted_within_30_days"
             ),
             "above_threshold": bool(prediction),
             "explanation": explanation,
