@@ -254,18 +254,26 @@ If explanation generation is unavailable, the API can still return the predictio
 
 ```text
 Clinical-Readmission-xai/
+│
 ├── main.py
 ├── schemas.py
 ├── requirements.txt
 ├── requirements-dev.txt
-├── .python-version
-├── .gitignore
+│
 ├── readmission_model_v1.joblib
 ├── clinical_readmission_model.joblib
 ├── optimal_threshold.txt
+│
 ├── readmission_predictor.ipynb
+├── Upgraded_readmission_predictor.ipynb
+│
 ├── tests/
 │   └── test_api.py
+│
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+│
 └── README.md
 ```
 
