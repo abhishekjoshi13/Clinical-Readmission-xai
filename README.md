@@ -269,7 +269,7 @@ Clinical-Readmission-xai/
 └── README.md
 ```
 
-The active API entry point is the root-level `main.py`. The older `deployment/app.py` is retained for reference and is not used by the current Render deployment.
+The active API entry point is the root-level `main.py`. The current Render deployment uses this application and loads `readmission_model_v1.joblib` from the repository root.
 
 The deployed application loads `readmission_model_v1.joblib` from the repository root. The files `clinical_readmission_model.joblib` and `optimal_threshold.txt` are legacy artifacts and are not used by the current API.
 
