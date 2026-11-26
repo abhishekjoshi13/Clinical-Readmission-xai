@@ -8,8 +8,10 @@ import joblib
 import numpy as np
 import pandas as pd
 import shap
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from schemas import PatientData
 
@@ -32,9 +34,7 @@ async def lifespan(app: FastAPI):
     )
 
     if not model_path.is_file():
-        raise RuntimeError(
-            f"Model artifact not found: {model_path}"
-        )
+        raise RuntimeError("Model artifact not found")
 
     try:
         bundle = joblib.load(model_path)
@@ -138,6 +138,42 @@ if allowed_origins:
         allow_origins=allowed_origins,
         allow_methods=["GET", "POST"],
         allow_headers=["Content-Type", "Authorization"]
+    )
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'none'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'none'"
+    )
+    response.headers["Permissions-Policy"] = (
+        "camera=(), microphone=(), geolocation=()"
+    )
+    response.headers["Cache-Control"] = "no-store"
+
+    return response
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request,
+    exc: RequestValidationError
+):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": (
+                "Request validation failed. "
+                "Check field names and value constraints."
+            )
+        }
     )
 
 
@@ -313,7 +349,9 @@ def predict_risk(data: PatientData):
         )
 
 
+ 
+   
 
        
- 
-      
+               
+        
