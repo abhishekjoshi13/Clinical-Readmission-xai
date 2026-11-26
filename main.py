@@ -45,6 +45,8 @@ async def lifespan(app: FastAPI):
         model = bundle["model"]
         threshold = float(bundle["threshold"])
         feature_columns = bundle["feature_columns"]
+        numeric_features = bundle["numeric_features"]
+        model_version = str(bundle.get("model_version", "unknown"))
 
         if not 0 <= threshold <= 1:
             raise ValueError("Invalid decision threshold")
@@ -52,9 +54,26 @@ async def lifespan(app: FastAPI):
         if len(feature_columns) != 44:
             raise ValueError("Unexpected model feature count")
 
+        if len(set(feature_columns)) != len(feature_columns):
+            raise ValueError("Duplicate model feature names found")
+
         if set(feature_columns) != set(get_schema_columns()):
             raise ValueError(
                 "API schema features do not match model features"
+            )
+
+        if not isinstance(numeric_features, (list, tuple)):
+            raise ValueError("Invalid numeric feature metadata")
+
+        if not numeric_features:
+            raise ValueError("Numeric feature metadata is empty")
+
+        if len(set(numeric_features)) != len(numeric_features):
+            raise ValueError("Duplicate numeric features found")
+
+        if not set(numeric_features).issubset(set(feature_columns)):
+            raise ValueError(
+                "Numeric features do not match model feature columns"
             )
 
         if not hasattr(model, "named_steps"):
@@ -66,7 +85,9 @@ async def lifespan(app: FastAPI):
         app.state.model = model
         app.state.threshold = threshold
         app.state.feature_columns = feature_columns
+        app.state.numeric_features = numeric_features
         app.state.preprocessor = preprocessor
+        app.state.model_version = model_version
         app.state.explainer = None
 
         try:
@@ -79,7 +100,7 @@ async def lifespan(app: FastAPI):
 
         logger.info(
             "Model version %s loaded successfully",
-            bundle.get("model_version", "unknown")
+            model_version
         )
 
     except Exception as exc:
@@ -90,6 +111,7 @@ async def lifespan(app: FastAPI):
 
     app.state.model = None
     app.state.explainer = None
+
     logger.info("Application resources released")
 
 
@@ -129,7 +151,7 @@ def health_check():
 
     return {
         "status": "healthy",
-        "model_version": "1.0.0",
+        "model_version": app.state.model_version,
         "explainability_available": (
             app.state.explainer is not None
         )
@@ -227,6 +249,22 @@ def predict_risk(data: PatientData):
             columns=app.state.feature_columns
         )
 
+        input_df = input_df.map(
+            lambda value: (
+                np.nan
+                if value is None or (
+                    isinstance(value, str) and value == "?"
+                )
+                else value
+            )
+        )
+
+        for column in app.state.numeric_features:
+            input_df[column] = pd.to_numeric(
+                input_df[column],
+                errors="raise"
+            )
+
         probabilities = model.predict_proba(input_df)
 
         classes = list(model.classes_)
@@ -246,7 +284,7 @@ def predict_risk(data: PatientData):
         explanation = generate_explanation(processed_features)
 
         return {
-            "model_version": "1.0.0",
+            "model_version": app.state.model_version,
             "readmission_probability": round(probability, 4),
             "decision_threshold": round(threshold, 6),
             "predicted_class": prediction,
@@ -273,3 +311,9 @@ def predict_risk(data: PatientData):
             status_code=500,
             detail="Prediction could not be completed"
         )
+
+
+
+       
+ 
+      
