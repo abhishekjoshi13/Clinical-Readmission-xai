@@ -129,3 +129,59 @@ def test_invalid_numeric_value_rejected(client, valid_patient):
     response = client.post("/predict_risk", json=invalid_patient)
 
     assert response.status_code == 422
+
+
+def test_security_headers(client):
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
+    assert response.headers["Referrer-Policy"] == "no-referrer"
+    assert "default-src 'none'" in response.headers[
+        "Content-Security-Policy"
+    ]
+    assert response.headers["Cache-Control"] == "no-store"
+
+
+def test_xss_payload_is_not_reflected(client, valid_patient):
+    payload = "<script>alert('xss')</script>"
+
+    malicious_patient = valid_patient.copy()
+    malicious_patient["race"] = payload
+
+    response = client.post(
+        "/predict_risk",
+        json=malicious_patient
+    )
+
+    assert response.status_code == 200
+    assert payload not in response.text
+    assert "<script>" not in response.text
+
+
+def test_validation_error_does_not_expose_input(
+    client,
+    valid_patient
+):
+    malicious_patient = valid_patient.copy()
+    malicious_patient["race"] = "<script>secret-value</script>"
+    malicious_patient["time_in_hospital"] = -1
+
+    response = client.post(
+        "/predict_risk",
+        json=malicious_patient
+    )
+
+    assert response.status_code == 422
+    assert "secret-value" not in response.text
+    assert "<script>" not in response.text
+
+    assert response.json()["detail"] == (
+        "Request validation failed. "
+        "Check field names and value constraints."
+    )
+
+
+ 
+  
