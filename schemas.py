@@ -54,20 +54,37 @@ class PatientData(BaseModel):
     insulin: str | None = Field(..., max_length=20)
 
     glyburide_metformin: str | None = Field(
-        ..., alias="glyburide-metformin", max_length=20
+        ...,
+        alias="glyburide-metformin",
+        max_length=20
     )
+
     glipizide_metformin: str | None = Field(
-        ..., alias="glipizide-metformin", max_length=20
+        ...,
+        alias="glipizide-metformin",
+        max_length=20
     )
+
     glimepiride_pioglitazone: str | None = Field(
-        ..., alias="glimepiride-pioglitazone", max_length=20
+        ...,
+        alias="glimepiride-pioglitazone",
+        max_length=20
     )
+
     metformin_rosiglitazone: str | None = Field(
-        ..., alias="metformin-rosiglitazone", max_length=20
+        ...,
+        alias="metformin-rosiglitazone",
+        max_length=20
     )
+
     metformin_pioglitazone: str | None = Field(
-        ..., alias="metformin-pioglitazone", max_length=20
+        ...,
+        alias="metformin-pioglitazone",
+        max_length=20
     )
 
     change: str | None = Field(..., max_length=10)
     diabetesMed: str | None = Field(..., max_length=10)
+
+
+ 
