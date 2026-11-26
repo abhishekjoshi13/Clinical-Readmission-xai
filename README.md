@@ -259,17 +259,22 @@ Clinical-Readmission-xai/
 ├── schemas.py
 ├── requirements.txt
 ├── .python-version
+├── .gitignore
+│
 ├── readmission_model_v1.joblib
+├── clinical_readmission_model.joblib   # Legacy model artifact
+├── optimal_threshold.txt               # Legacy threshold file
+│
 ├── readmission_predictor.ipynb
 ├── README.md
 │
 └── deployment/
-    └── app.py
+    └── app.py                          # Legacy API; not used by current deployment
 ```
 
-The active API entry point is the root-level `main.py`. The older `deployment/app.py` is retained in the repository but is not used by the current Render deployment.
+The active API entry point is the root-level `main.py`. The older `deployment/app.py` is retained for reference and is not used by the current Render deployment.
 
-The deployed application loads `readmission_model_v1.joblib` from the repository root.
+The deployed application loads `readmission_model_v1.joblib` from the repository root. The files `clinical_readmission_model.joblib` and `optimal_threshold.txt` are legacy artifacts and are not used by the current API.
 
 ## API Usage
 
