@@ -254,22 +254,19 @@ If explanation generation is unavailable, the API can still return the predictio
 
 ```text
 Clinical-Readmission-xai/
-│
 ├── main.py
 ├── schemas.py
 ├── requirements.txt
+├── requirements-dev.txt
 ├── .python-version
 ├── .gitignore
-│
 ├── readmission_model_v1.joblib
-├── clinical_readmission_model.joblib   # Legacy model artifact
-├── optimal_threshold.txt               # Legacy threshold file
-│
+├── clinical_readmission_model.joblib
+├── optimal_threshold.txt
 ├── readmission_predictor.ipynb
-├── README.md
-│
-└── deployment/
-    └── app.py                          # Legacy API; not used by current deployment
+├── tests/
+│   └── test_api.py
+└── README.md
 ```
 
 The active API entry point is the root-level `main.py`. The older `deployment/app.py` is retained for reference and is not used by the current Render deployment.
